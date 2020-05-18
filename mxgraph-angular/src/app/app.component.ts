@@ -29,7 +29,9 @@ export class AppComponent implements AfterViewInit {
       graph.getModel().beginUpdate();
       const vertex1 = graph.insertVertex(parent, '1', 'Vertex 1', 0, 0, 200, 80);
       const vertex2 = graph.insertVertex(parent, '2', 'Vertex 2', 0, 0, 200, 80);
-      graph.insertEdge(parent, '', '', vertex1, vertex2);
+      const vertex3 = graph.insertVertex(parent, '2', 'Vertex 3', 0, 0, 200, 80);
+      var edge1 = graph.insertEdge(parent, '', '', vertex1, vertex2);
+      var edge2 = graph.insertEdge(parent, '', '', vertex2, vertex3);
     } finally {
       graph.getModel().endUpdate();
       new mxHierarchicalLayout(graph).execute(graph.getDefaultParent());
