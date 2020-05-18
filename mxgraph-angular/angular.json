@@ -123,6 +123,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "mxgraph-angular"
+    }
+  },
+  "defaultProject": "mxgraph-angular",
+  "cli": {
+    "analytics": "79d9b773-75e4-4fb3-958d-f9f032a67f4d"
+  }
 }
