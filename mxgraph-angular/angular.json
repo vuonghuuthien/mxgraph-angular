@@ -30,7 +30,9 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/mxgraph/javascript/mxClient.js"
+            ]
           },
           "configurations": {
             "production": {
@@ -94,7 +96,9 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [
+              "node_modules/mxgraph/javascript/mxClient.js"
+            ]
           }
         },
         "lint": {
