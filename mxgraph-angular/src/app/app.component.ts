@@ -7,6 +7,7 @@ declare var mxConstants: any;
 declare var mxRectangle: any;
 declare var mxEdgeStyle: any;
 declare var mxPoint: any;
+declare var mxUtils: any;
 
 @Component({
   selector: 'app-root',
@@ -14,26 +15,38 @@ declare var mxPoint: any;
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements AfterViewInit {
+  @ViewChild('sidebarContainer') sidebarContainer: ElementRef;
   @ViewChild('graphContainer') graphContainer: ElementRef;
   ngAfterViewInit() {
     // Creates the graph inside the DOM node.
     const graph = new mxGraph(this.graphContainer.nativeElement);
+    const sidebar = document.getElementById('sidebarContainer');
     this.configureStylesheet(graph);
-    //
-    var parent = graph.getDefaultParent();
-    var model = graph.getModel();
+    this.addSidebarIcon(graph, sidebar, 
+      'Hello',
+      '../../../assets/image/icon.png')
+  }
 
-    var vertex1 = null;
-
-    model.beginUpdate();
-
-    try
+  addSidebarIcon(graph, sidebar, label, image)
+  {
+    // Function that is executed when the image is dropped on
+    // the graph. The cell argument points to the cell under
+    // the mousepointer if there is one.
+    var funct = function(graph, evt, cell, x, y)
+    {
+      var parent = graph.getDefaultParent();
+      var model = graph.getModel();
+      
+      var vertex1 = null;
+      
+      model.beginUpdate();
+      try
       {
         // NOTE: For non-HTML labels the image must be displayed via the style
         // rather than the label markup, so use 'image=' + image for the style.
         // as follows: v1 = graph.insertVertex(parent, null, label,
         // pt.x, pt.y, 120, 120, 'image=' + image);
-        vertex1 = graph.insertVertex(parent, null, "Vertex 1", 0, 0, 120, 40);
+        vertex1 = graph.insertVertex(parent, null, label, x, y, 120, 40);
         vertex1.setConnectable(false);
                   
         // Adds the ports at various relative locations
@@ -44,14 +57,32 @@ export class AppComponent implements AfterViewInit {
         var port = graph.insertVertex(vertex1, null, '', 1, 0.5, 16, 16,
             'port;image=../../../assets/image/after.png;spacingLeft=18', true);
         port.geometry.offset = new mxPoint(-8, -8);
-
       }
-    finally
-    {
-      model.endUpdate();
+      finally
+      {
+        model.endUpdate();
+      }
+      
+      graph.setSelectionCell(vertex1);
     }
-    graph.setSelectionCell(vertex1);
-  }
+    
+    // Creates the image which is used as the sidebar icon (drag source)
+    var img = document.createElement('img');
+    img.setAttribute('src', image);
+    img.style.width = '35px';
+    img.style.height = '35px';
+    img.title = 'Drag this to the diagram to create a new vertex';
+    sidebar.appendChild(img);
+    
+    var dragElt = document.createElement('div');
+    dragElt.style.border = 'dashed black 1px';
+    dragElt.style.width = '120px';
+    dragElt.style.height = '40px';
+                
+    // Creates the image which is used as the drag icon (preview)
+    var ds = mxUtils.makeDraggable(img, graph, funct, dragElt, 0, 0, true, true);
+    ds.setGuidesEnabled(true);
+  };
 
   configureStylesheet(graph)
   {
