@@ -1,18 +1,32 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 
-declare var mxGraph: any;
-declare var mxHierarchicalLayout: any;
-declare var mxDivResizer: any;
-declare var mxPerimeter: any;
-declare var mxConstants: any;
-declare var mxRectangle: any;
-declare var mxEdgeStyle: any;
-declare var mxEffects: any;
-declare var mxWindow: any;
-declare var mxClient: any;
-declare var mxEvent: any;
-declare var mxPoint: any;
+declare var mxGeometry: any;
 declare var mxUtils: any;
+declare var mxDivResizer: any;
+declare var mxClient: any;
+declare var mxConstants: any;
+declare var mxEditor: any;
+declare var mxCell: any;
+declare var mxEdgeHandler: any;
+declare var mxGuide: any;
+declare var mxGraphHandler: any;
+declare var mxCodec: any;
+declare var mxEvent: any;
+declare var mxOutline: any;
+declare var mxEdgeStyle: any;
+declare var mxCellOverlay: any;
+declare var mxImage: any;
+declare var mxPerimeter: any;
+declare var mxConnectionHandler: any;
+declare var mxEffects: any;
+declare var mxRectangle: any;
+declare var mxWindow: any;
+declare var mxConnectionConstraint: any;
+declare var mxPoint: any;
+declare var mxGraph: any;
+declare var mxParallelEdgeLayout: any;
+declare var mxLayoutManager: any;
+
 
 @Component({
   selector: 'app-root',
@@ -23,21 +37,119 @@ export class AppComponent implements AfterViewInit {
   @ViewChild('sidebarContainer') sidebarContainer: ElementRef;
   @ViewChild('graphContainer') graphContainer: ElementRef;
   ngAfterViewInit() {
-    // Creates the graph inside the DOM node.
     const graph = new mxGraph(this.graphContainer.nativeElement);
     const sidebar = document.getElementById('sidebarContainer');
-    // Enables new connections
+    graph.setAllowDanglingEdges(false); // Does not allow dangling edges
+    graph.isHtmlLabel = function(cell) {
+      return !this.isSwimlane(cell);
+    }
     graph.setConnectable(true);
-    // Adds all required styles to the graph (see below)
     this.configureStylesheet(graph);
 
     this.addSidebarIcon(graph, sidebar, 
-      '<img src="/assets/image/icon.png" width="48" height="48">',
-      '/assets/image/icon.png')
+      '<img src="/assets/image/icon_1.png" height="38" style="object-fit: cover;">',
+      '/assets/image/icon_1.png')
+    this.addSidebarIcon(graph, sidebar, 
+      '<img src="/assets/image/icon_2.png" height="38" style="object-fit: cover;">',
+      '/assets/image/icon_2.png')
+    this.addSidebarIcon(graph, sidebar, 
+      '<img src="/assets/image/icon_3.png" height="38" style="object-fit: cover;">',
+      '/assets/image/icon_3.png')
+    
+    this.main(document.getElementById('graphContainer'),
+			document.getElementById('outlineContainer'),
+		 	document.getElementById('toolbarContainer'),
+			document.getElementById('sidebarContainer'))
   }
 
-  addSidebarIcon(graph, sidebar, html, image)
-  {
+  main(container, outline, toolbar, sidebar) {
+    if (!mxClient.isBrowserSupported()) {
+      mxUtils.error('Browser is not supported!', 200, false);
+    } else {
+      mxConstants.MIN_HOTSPOT_SIZE = 16;
+      mxConstants.DEFAULT_HOTSPOT = 1;
+
+      mxGraphHandler.prototype.guidesEnabled = true; // Cho phép hướng dẫn
+
+      mxGuide.prototype.isEnabledForEvent = function(evt) // Alt vô hiệu hóa hướng dẫn
+      {
+        return !mxEvent.isAltDown(evt);
+      };
+
+      mxEdgeHandler.prototype.snapToTerminals = true; // Cho phép chụp điểm tham chiếu đến thiết bị đầu cuối
+
+      if (mxClient.IS_QUIRKS) {
+        document.body.style.overflow = 'hidden';
+        new mxDivResizer(container);
+        new mxDivResizer(outline);
+        new mxDivResizer(toolbar);
+        new mxDivResizer(sidebar);
+      }
+      //
+      var editor = new mxEditor();
+      var graph = editor.graph;
+      var model = graph.getModel();
+
+      graph.setDropEnabled(false); // Vô hiệu hóa tô sáng các ô khi kéo từ thanh công cụ
+
+      graph.connectionHandler.getConnectImage = function(state) // Sử dụng biểu tượng cổng trong khi kết nối được xem trước
+      {
+        return new mxImage(state.style[mxConstants.STYLE_IMAGE], 16, 16);
+      };
+
+      graph.connectionHandler.targetConnectImage = true; // Trung tâm biểu tượng cổng trên cổng đích
+      
+      graph.setAllowDanglingEdges(false); // Does not allow dangling edges
+
+      // Đặt bộ chứa biểu đồ và định cấu hình trình chỉnh sửa
+      editor.setGraphContainer(container);
+      var config = mxUtils.load(
+        '/assets/xml/keyhandler-commons.xml').
+          getDocumentElement();
+      editor.configure(config);
+
+      var group = new mxCell('Group', new mxGeometry(), 'group');
+      group.setVertex(true);
+      group.setConnectable(false);
+      editor.defaultGroup = group;
+      editor.groupBorderSize = 20;
+
+      // Disables drag-and-drop into non-swimlanes.
+      graph.isValidDropTarget = function(cell, cells, evt) {
+        return this.isSwimlane(cell);
+      };
+
+      // Disables drilling into non-swimlanes.
+      graph.isValidRoot = function(cell) {
+        return this.isValidDropTarget(cell);
+      }
+
+      // Trả về nhãn ngắn hơn nếu ô bị thu gọn và không có nhãn cho các nhóm mở rộng
+      graph.getLabel = function(cell) {
+        var tmp = mxGraph.prototype.getLabel.apply(this, arguments); // "supercall"
+        
+        if (this.isCellLocked(cell)) {
+          return '';
+        } else if (this.isCellCollapsed(cell)) {
+          var index = tmp.indexOf('</h1>');
+          
+          if (index > 0) {
+            tmp = tmp.substring(0, index+5);
+          }
+        }
+        return tmp;
+      }
+
+      graph.isHtmlLabel = function(cell) {
+        return !this.isSwimlane(cell);
+      }
+
+      // Enables new connections
+			graph.setConnectable(true);
+    }
+  }
+
+  addSidebarIcon(graph, sidebar, html, image) {
     // Function that is executed when the image is dropped on
     // the graph. The cell argument points to the cell under
     // the mousepointer if there is one.

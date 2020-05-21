@@ -1,3 +1,16 @@
+#toolbarContainer {
+    position: absolute;
+    white-space: nowrap;
+    overflow: hidden;
+    top: 0px;
+    left: 0px;
+    max-height: 24px;
+    height: 36px;
+    right: 0px;
+    padding: 6px;
+    background-image: url('../assets/image/toolbar_bg.gif');
+}
+
 #sidebarContainer {
     position: absolute;
     top: 36px;
@@ -22,4 +35,15 @@
     right: 0px;
     background-image: url('../assets/image/grid.gif');
     cursor: default;
+}
+
+#outlineContainer {
+    position: absolute;
+    overflow: hidden;
+    top: 36px;
+    right: 0px;
+    width: 200px;
+    height: 140px;
+    background: transparent;
+    border: 2px solid black;
 }
