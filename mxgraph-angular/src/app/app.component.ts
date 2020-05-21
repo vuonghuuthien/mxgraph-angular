@@ -2,10 +2,15 @@ import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 
 declare var mxGraph: any;
 declare var mxHierarchicalLayout: any;
+declare var mxDivResizer: any;
 declare var mxPerimeter: any;
 declare var mxConstants: any;
 declare var mxRectangle: any;
 declare var mxEdgeStyle: any;
+declare var mxEffects: any;
+declare var mxWindow: any;
+declare var mxClient: any;
+declare var mxEvent: any;
 declare var mxPoint: any;
 declare var mxUtils: any;
 
@@ -21,13 +26,17 @@ export class AppComponent implements AfterViewInit {
     // Creates the graph inside the DOM node.
     const graph = new mxGraph(this.graphContainer.nativeElement);
     const sidebar = document.getElementById('sidebarContainer');
+    // Enables new connections
+    graph.setConnectable(true);
+    // Adds all required styles to the graph (see below)
     this.configureStylesheet(graph);
+
     this.addSidebarIcon(graph, sidebar, 
-      'Hello',
-      '../../../assets/image/icon.png')
+      '<img src="/assets/image/icon.png" width="48" height="48">',
+      '/assets/image/icon.png')
   }
 
-  addSidebarIcon(graph, sidebar, label, image)
+  addSidebarIcon(graph, sidebar, html, image)
   {
     // Function that is executed when the image is dropped on
     // the graph. The cell argument points to the cell under
@@ -37,7 +46,7 @@ export class AppComponent implements AfterViewInit {
       var parent = graph.getDefaultParent();
       var model = graph.getModel();
       
-      var vertex1 = null;
+      var vertex = null;
       
       model.beginUpdate();
       try
@@ -46,16 +55,16 @@ export class AppComponent implements AfterViewInit {
         // rather than the label markup, so use 'image=' + image for the style.
         // as follows: v1 = graph.insertVertex(parent, null, label,
         // pt.x, pt.y, 120, 120, 'image=' + image);
-        vertex1 = graph.insertVertex(parent, null, label, x, y, 120, 40);
-        vertex1.setConnectable(false);
+        vertex = graph.insertVertex(parent, null, html, x, y, 120, 40);
+        vertex.setConnectable(false);
                   
         // Adds the ports at various relative locations
-        var port = graph.insertVertex(vertex1, null, '', 0, 0.5, 16, 16,
-            'port;image=../../../assets/image/before.png;align=right;imageAlign=right;spacingRight=18', true);
+        var port = graph.insertVertex(vertex, null, '', 0, 0.5, 16, 16,
+            'port;image=/assets/image/before.png;align=right;imageAlign=right;spacingRight=18', true);
         port.geometry.offset = new mxPoint(-8, -8);
 
-        var port = graph.insertVertex(vertex1, null, '', 1, 0.5, 16, 16,
-            'port;image=../../../assets/image/after.png;spacingLeft=18', true);
+        var port = graph.insertVertex(vertex, null, '', 1, 0.5, 16, 16,
+            'port;image=/assets/image/after.png;spacingLeft=18', true);
         port.geometry.offset = new mxPoint(-8, -8);
       }
       finally
@@ -63,7 +72,7 @@ export class AppComponent implements AfterViewInit {
         model.endUpdate();
       }
       
-      graph.setSelectionCell(vertex1);
+      graph.setSelectionCell(vertex);
     }
     
     // Creates the image which is used as the sidebar icon (drag source)
@@ -92,12 +101,12 @@ export class AppComponent implements AfterViewInit {
     style[mxConstants.STYLE_PERIMETER] = mxPerimeter.RectanglePerimeter;
     style[mxConstants.STYLE_ALIGN] = mxConstants.ALIGN_CENTER;
     style[mxConstants.STYLE_VERTICAL_ALIGN] = mxConstants.ALIGN_MIDDLE;
-    style[mxConstants.STYLE_GRADIENTCOLOR] = '#E0E0E0';
+    // style[mxConstants.STYLE_GRADIENTCOLOR] = '#E0E0E0';
     style[mxConstants.STYLE_FILLCOLOR] = '#FFFFFF';
     style[mxConstants.STYLE_STROKECOLOR] = '#9E9E9E';
     style[mxConstants.STYLE_FONTCOLOR] = '#000000';
     style[mxConstants.STYLE_ROUNDED] = true;
-    style[mxConstants.STYLE_SHADOW] = true;
+    // style[mxConstants.STYLE_SHADOW] = true;
     style[mxConstants.STYLE_IMAGE_WIDTH] = '20';
     style[mxConstants.STYLE_IMAGE_HEIGHT] = '20';
     graph.getStylesheet().putDefaultVertexStyle(style);

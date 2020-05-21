@@ -1,0 +1,25 @@
+#sidebarContainer {
+    position: absolute;
+    top: 36px;
+    left: 0;
+    bottom: 36px;
+    width: 200px;
+    padding: 10px;
+    .header {
+        i:hover {
+            opacity: 0.8;
+            cursor: pointer;
+        }
+    }
+}
+
+#graphContainer {
+    position: absolute;
+    overflow: hidden;
+    top: 36px;
+    left: 200px;
+    bottom: 36px;
+    right: 0px;
+    background-image: url('../assets/image/grid.gif');
+    cursor: default;
+}
