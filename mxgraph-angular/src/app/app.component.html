@@ -1,8 +1,18 @@
-<div #toolbarContainer id="toolbarContainer"></div>
-<div #sidebarContainer id="sidebarContainer" class="border-right shadow-sm">
-    <div class="header d-flex justify-content-between align-items-center mb-1">
+<div class="d-flex align-items-center" #toolbarContainer id="toolbarContainer"></div>
+<div class="sidebarContainer border-right shadow-sm">
+    <div class="header d-flex justify-content-between align-items-center mb-2">
         <b>Campaign Tools</b>
         <i class="fas fa-angle-double-left"></i>
+    </div>
+    <div class="body">
+        <div>
+            <div class="my-1"><b style="font-size: 0.9rem;">Sequences</b></div>
+            <div class="border p-1" #sidebarContainer id="sequences"></div>
+        </div>
+        <div>
+            <div class="my-1"><b style="font-size: 0.9rem;">Goals</b></div>
+            <div class="border p-1" #sidebarContainer id="goals"></div>
+        </div>
     </div>
 </div>
 <div #graphContainer id="graphContainer"></div>

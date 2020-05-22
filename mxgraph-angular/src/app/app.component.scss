@@ -4,14 +4,12 @@
     overflow: hidden;
     top: 0px;
     left: 0px;
-    max-height: 24px;
     height: 36px;
     right: 0px;
-    padding: 6px;
     background-image: url('../assets/image/toolbar_bg.gif');
 }
 
-#sidebarContainer {
+.sidebarContainer {
     position: absolute;
     top: 36px;
     left: 0;
@@ -23,6 +21,9 @@
             opacity: 0.8;
             cursor: pointer;
         }
+    }
+    .body {
+
     }
 }
 

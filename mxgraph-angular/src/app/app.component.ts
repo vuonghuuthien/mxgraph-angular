@@ -34,125 +34,107 @@ declare var mxLayoutManager: any;
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements AfterViewInit {
+  @ViewChild('toolbarContainer') toolbarContainer: ElementRef;
   @ViewChild('sidebarContainer') sidebarContainer: ElementRef;
   @ViewChild('graphContainer') graphContainer: ElementRef;
+  @ViewChild('outlineContainer') outlineContainer: ElementRef;
   ngAfterViewInit() {
     const graph = new mxGraph(this.graphContainer.nativeElement);
-    const sidebar = document.getElementById('sidebarContainer');
+    const toolbar = document.getElementById('toolbarContainer');
+    const sidebar_sequences = document.getElementById('sequences');
+    const sidebar_goals = document.getElementById('goals');
+    const outline = document.getElementById('outlineContainer');
+    this.createCells(graph, sidebar_sequences, sidebar_goals);
+
+    //
+    var editor = new mxEditor();
+    // Creates a new DIV that is used as a toolbar and adds
+    // toolbar buttons.
+    var spacer = document.createElement('div');
+    spacer.style.display = 'inline';
+    spacer.style.padding = '8px';
+
+    this.addToolbarButton(editor, toolbar, 'delete', 'Delete', 'images/delete2.png');
+				
+    toolbar.appendChild(spacer.cloneNode(true));
+    
+    this.addToolbarButton(editor, toolbar, 'cut', 'Cut', 'images/cut.png');
+    this.addToolbarButton(editor, toolbar, 'copy', 'Copy', 'images/copy.png');
+    this.addToolbarButton(editor, toolbar, 'paste', 'Paste', 'images/paste.png');
+
+    toolbar.appendChild(spacer.cloneNode(true));
+
+    this.addToolbarButton(editor, toolbar, 'undo', '', 'images/undo.png');
+    this.addToolbarButton(editor, toolbar, 'redo', '', 'images/redo.png');
+
+    toolbar.appendChild(spacer.cloneNode(true));
+
+    this.showOutline(graph, outline);
+  }
+
+  createCells(graph, sidebar_sequences, sidebar_goals) {
     graph.setAllowDanglingEdges(false); // Does not allow dangling edges
-    graph.isHtmlLabel = function(cell) {
+    graph.isHtmlLabel = function(cell) { // For label is Html
       return !this.isSwimlane(cell);
     }
+    graph.dblClick = function(evt, cell)
+    {
+      // Disables any default behaviour for the double click
+      mxEvent.consume(evt);
+    };
     graph.setConnectable(true);
     this.configureStylesheet(graph);
 
-    this.addSidebarIcon(graph, sidebar, 
-      '<img src="/assets/image/icon_1.png" height="38" style="object-fit: cover;">',
-      '/assets/image/icon_1.png')
-    this.addSidebarIcon(graph, sidebar, 
-      '<img src="/assets/image/icon_2.png" height="38" style="object-fit: cover;">',
-      '/assets/image/icon_2.png')
-    this.addSidebarIcon(graph, sidebar, 
-      '<img src="/assets/image/icon_3.png" height="38" style="object-fit: cover;">',
-      '/assets/image/icon_3.png')
-    
-    this.main(document.getElementById('graphContainer'),
-			document.getElementById('outlineContainer'),
-		 	document.getElementById('toolbarContainer'),
-			document.getElementById('sidebarContainer'))
+    this.addSidebarIcon(graph, sidebar_sequences, 
+      '<div style="position: relative;">' + 
+        '<img src="/assets/image/icon_1.png" height="38" style="object-fit: cover;">' + 
+        '<div class="d-flex justify-content-center"><b class="position-absolute mt-1">Sequence</b></div>' + 
+      '</div>',
+      '/assets/image/icon_1.png', 'sequence')
+    this.addSidebarIcon(graph, sidebar_goals, 
+      '<div style="position: relative;">' + 
+        '<img src="/assets/image/icon_2.png" height="38" style="object-fit: cover;">' + 
+        '<div class="d-flex justify-content-center"><b class="position-absolute mt-1">Name Goal</b></div>' + 
+      '</div>',
+      '/assets/image/icon_2.png', 'goal')
+    this.addSidebarIcon(graph, sidebar_goals, 
+      '<div style="position: relative;">' + 
+        '<img src="/assets/image/icon_3.png" height="38" style="object-fit: cover;">' + 
+        '<div class="d-flex justify-content-center"><b class="position-absolute mt-1">Name Goal</b></div>' + 
+      '</div>',
+      '/assets/image/icon_3.png', 'goal')
   }
 
-  main(container, outline, toolbar, sidebar) {
-    if (!mxClient.isBrowserSupported()) {
-      mxUtils.error('Browser is not supported!', 200, false);
-    } else {
-      mxConstants.MIN_HOTSPOT_SIZE = 16;
-      mxConstants.DEFAULT_HOTSPOT = 1;
-
-      mxGraphHandler.prototype.guidesEnabled = true; // Cho phép hướng dẫn
-
-      mxGuide.prototype.isEnabledForEvent = function(evt) // Alt vô hiệu hóa hướng dẫn
-      {
-        return !mxEvent.isAltDown(evt);
-      };
-
-      mxEdgeHandler.prototype.snapToTerminals = true; // Cho phép chụp điểm tham chiếu đến thiết bị đầu cuối
-
-      if (mxClient.IS_QUIRKS) {
-        document.body.style.overflow = 'hidden';
-        new mxDivResizer(container);
-        new mxDivResizer(outline);
-        new mxDivResizer(toolbar);
-        new mxDivResizer(sidebar);
-      }
-      //
-      var editor = new mxEditor();
-      var graph = editor.graph;
-      var model = graph.getModel();
-
-      graph.setDropEnabled(false); // Vô hiệu hóa tô sáng các ô khi kéo từ thanh công cụ
-
-      graph.connectionHandler.getConnectImage = function(state) // Sử dụng biểu tượng cổng trong khi kết nối được xem trước
-      {
-        return new mxImage(state.style[mxConstants.STYLE_IMAGE], 16, 16);
-      };
-
-      graph.connectionHandler.targetConnectImage = true; // Trung tâm biểu tượng cổng trên cổng đích
-      
-      graph.setAllowDanglingEdges(false); // Does not allow dangling edges
-
-      // Đặt bộ chứa biểu đồ và định cấu hình trình chỉnh sửa
-      editor.setGraphContainer(container);
-      var config = mxUtils.load(
-        '/assets/xml/keyhandler-commons.xml').
-          getDocumentElement();
-      editor.configure(config);
-
-      var group = new mxCell('Group', new mxGeometry(), 'group');
-      group.setVertex(true);
-      group.setConnectable(false);
-      editor.defaultGroup = group;
-      editor.groupBorderSize = 20;
-
-      // Disables drag-and-drop into non-swimlanes.
-      graph.isValidDropTarget = function(cell, cells, evt) {
-        return this.isSwimlane(cell);
-      };
-
-      // Disables drilling into non-swimlanes.
-      graph.isValidRoot = function(cell) {
-        return this.isValidDropTarget(cell);
-      }
-
-      // Trả về nhãn ngắn hơn nếu ô bị thu gọn và không có nhãn cho các nhóm mở rộng
-      graph.getLabel = function(cell) {
-        var tmp = mxGraph.prototype.getLabel.apply(this, arguments); // "supercall"
-        
-        if (this.isCellLocked(cell)) {
-          return '';
-        } else if (this.isCellCollapsed(cell)) {
-          var index = tmp.indexOf('</h1>');
-          
-          if (index > 0) {
-            tmp = tmp.substring(0, index+5);
-          }
-        }
-        return tmp;
-      }
-
-      graph.isHtmlLabel = function(cell) {
-        return !this.isSwimlane(cell);
-      }
-
-      // Enables new connections
-			graph.setConnectable(true);
+  addToolbarButton(editor, toolbar, action, label, image, isTransparent?)
+  {
+    var button = document.createElement('button');
+    button.style.fontSize = '10px';
+    if (image != null)
+    {
+      var img = document.createElement('img');
+      img.setAttribute('src', image);
+      img.style.width = '16px';
+      img.style.height = '16px';
+      img.style.verticalAlign = 'middle';
+      img.style.marginRight = '2px';
+      button.appendChild(img);
     }
-  }
+    if (isTransparent)
+    {
+      button.style.background = 'transparent';
+      button.style.color = '#FFFFFF';
+      button.style.border = 'none';
+    }
+    mxEvent.addListener(button, 'click', function(evt)
+    {
+      editor.execute(action);
+    });
+    mxUtils.write(button, label);
+    toolbar.appendChild(button);
+  };
 
-  addSidebarIcon(graph, sidebar, html, image) {
-    // Function that is executed when the image is dropped on
-    // the graph. The cell argument points to the cell under
-    // the mousepointer if there is one.
+  addSidebarIcon(graph, sidebar, html, image, typeShape?) {
+
     var funct = function(graph, evt, cell, x, y)
     {
       var parent = graph.getDefaultParent();
@@ -163,19 +145,20 @@ export class AppComponent implements AfterViewInit {
       model.beginUpdate();
       try
       {
-        // NOTE: For non-HTML labels the image must be displayed via the style
-        // rather than the label markup, so use 'image=' + image for the style.
-        // as follows: v1 = graph.insertVertex(parent, null, label,
-        // pt.x, pt.y, 120, 120, 'image=' + image);
-        vertex = graph.insertVertex(parent, null, html, x, y, 120, 40);
+        // Adds the vertex 
+        if (typeShape == "sequence") {
+          vertex = graph.insertVertex(parent, null, html, x, y, 120, 40, typeShape);
+        } else if (typeShape == "goal") {
+          vertex = graph.insertVertex(parent, null, html, x, y, 40, 40, typeShape);
+        }
         vertex.setConnectable(false);
                   
         // Adds the ports at various relative locations
-        var port = graph.insertVertex(vertex, null, '', 0, 0.5, 16, 16,
+        var port = graph.insertVertex(vertex, null, 'in', 0, 0.5, 16, 16,
             'port;image=/assets/image/before.png;align=right;imageAlign=right;spacingRight=18', true);
         port.geometry.offset = new mxPoint(-8, -8);
 
-        var port = graph.insertVertex(vertex, null, '', 1, 0.5, 16, 16,
+        var port = graph.insertVertex(vertex, null, 'out', 1, 0.5, 16, 16,
             'port;image=/assets/image/after.png;spacingLeft=18', true);
         port.geometry.offset = new mxPoint(-8, -8);
       }
@@ -192,13 +175,19 @@ export class AppComponent implements AfterViewInit {
     img.setAttribute('src', image);
     img.style.width = '35px';
     img.style.height = '35px';
+    img.style.marginRight = '5px';
     img.title = 'Drag this to the diagram to create a new vertex';
     sidebar.appendChild(img);
     
     var dragElt = document.createElement('div');
     dragElt.style.border = 'dashed black 1px';
-    dragElt.style.width = '120px';
-    dragElt.style.height = '40px';
+    if (typeShape == "sequence") {
+      dragElt.style.width = '120px';
+      dragElt.style.height = '40px';
+    } else if (typeShape == "goal") {
+      dragElt.style.width = '40px';
+      dragElt.style.height = '40px';
+    }
                 
     // Creates the image which is used as the drag icon (preview)
     var ds = mxUtils.makeDraggable(img, graph, funct, dragElt, 0, 0, true, true);
@@ -219,8 +208,8 @@ export class AppComponent implements AfterViewInit {
     style[mxConstants.STYLE_FONTCOLOR] = '#000000';
     style[mxConstants.STYLE_ROUNDED] = true;
     // style[mxConstants.STYLE_SHADOW] = true;
-    style[mxConstants.STYLE_IMAGE_WIDTH] = '20';
-    style[mxConstants.STYLE_IMAGE_HEIGHT] = '20';
+    // style[mxConstants.STYLE_IMAGE_WIDTH] = '20';
+    // style[mxConstants.STYLE_IMAGE_HEIGHT] = '20';
     graph.getStylesheet().putDefaultVertexStyle(style);
 
     style = new Object();
@@ -258,4 +247,13 @@ export class AppComponent implements AfterViewInit {
     style[mxConstants.STYLE_ROUNDED] = true;
     style[mxConstants.STYLE_EDGE] = mxEdgeStyle.EntityRelation;
   };
+
+  showOutline(graph, outline) {
+    // Creates the outline (navigator, overview) for moving around the graph in the top, right corner of the window.
+    var outln = new mxOutline(graph, outline);
+
+    // Show the images in the outline
+    outln.outline.labelsVisible = true;
+    outln.outline.setHtmlLabels(true);
+  }
 }
