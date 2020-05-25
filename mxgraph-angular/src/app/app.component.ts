@@ -44,11 +44,11 @@ export class AppComponent implements AfterViewInit {
     // const graph = new mxGraph(this.graphContainer.nativeElement);
     const container = document.getElementById('graphContainer');
     const toolbar = document.getElementById('toolbarContainer');
-    const sidebar_sequences = document.getElementById('sequences');
-    const sidebar_goals = document.getElementById('goals');
+    const sidebar_sequences = document.getElementById('sequences'); // sidebarContainer
+    const sidebar_goals = document.getElementById('goals');         // sidebarContainer
     const outline = document.getElementById('outlineContainer');
     this.createCells(graph, sidebar_sequences, sidebar_goals);
-    this.actionToolbarButton(editor, toolbar, container);
+    this.createToolbar(editor, toolbar, container);
     this.showOutline(graph, outline);
   }
 
@@ -57,6 +57,7 @@ export class AppComponent implements AfterViewInit {
     graph.isHtmlLabel = function(cell) { // For label is Html
       return !this.isSwimlane(cell);
     }
+
     graph.dblClick = function(evt, cell)
     {
       // Disables any default behaviour for the double click
@@ -114,7 +115,7 @@ export class AppComponent implements AfterViewInit {
     toolbar.appendChild(button);
   }
 
-  actionToolbarButton(editor, toolbar, container) {
+  createToolbar(editor, toolbar, container) {
     // Sets the graph container and configures the editor
     editor.setGraphContainer(container);
     var config = mxUtils.load(
