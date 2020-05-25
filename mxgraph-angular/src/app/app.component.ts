@@ -39,36 +39,16 @@ export class AppComponent implements AfterViewInit {
   @ViewChild('graphContainer') graphContainer: ElementRef;
   @ViewChild('outlineContainer') outlineContainer: ElementRef;
   ngAfterViewInit() {
-    const graph = new mxGraph(this.graphContainer.nativeElement);
+    var editor = new mxEditor();
+    var graph = editor.graph;
+    // const graph = new mxGraph(this.graphContainer.nativeElement);
+    const container = document.getElementById('graphContainer');
     const toolbar = document.getElementById('toolbarContainer');
     const sidebar_sequences = document.getElementById('sequences');
     const sidebar_goals = document.getElementById('goals');
     const outline = document.getElementById('outlineContainer');
     this.createCells(graph, sidebar_sequences, sidebar_goals);
-
-    //
-    var editor = new mxEditor();
-    // Creates a new DIV that is used as a toolbar and adds
-    // toolbar buttons.
-    var spacer = document.createElement('div');
-    spacer.style.display = 'inline';
-    spacer.style.padding = '8px';
-
-    this.addToolbarButton(editor, toolbar, 'delete', 'Delete', 'images/delete2.png');
-				
-    toolbar.appendChild(spacer.cloneNode(true));
-    
-    this.addToolbarButton(editor, toolbar, 'cut', 'Cut', 'images/cut.png');
-    this.addToolbarButton(editor, toolbar, 'copy', 'Copy', 'images/copy.png');
-    this.addToolbarButton(editor, toolbar, 'paste', 'Paste', 'images/paste.png');
-
-    toolbar.appendChild(spacer.cloneNode(true));
-
-    this.addToolbarButton(editor, toolbar, 'undo', '', 'images/undo.png');
-    this.addToolbarButton(editor, toolbar, 'redo', '', 'images/redo.png');
-
-    toolbar.appendChild(spacer.cloneNode(true));
-
+    this.actionToolbarButton(editor, toolbar, container);
     this.showOutline(graph, outline);
   }
 
@@ -127,11 +107,41 @@ export class AppComponent implements AfterViewInit {
     }
     mxEvent.addListener(button, 'click', function(evt)
     {
+      console.log(action);
       editor.execute(action);
     });
     mxUtils.write(button, label);
     toolbar.appendChild(button);
-  };
+  }
+
+  actionToolbarButton(editor, toolbar, container) {
+    // Sets the graph container and configures the editor
+    editor.setGraphContainer(container);
+    var config = mxUtils.load(
+      '/assets/xml/keyhandler-commons.xml').
+        getDocumentElement();
+    editor.configure(config);
+    // Creates a new DIV that is used as a toolbar and adds
+    // toolbar buttons.
+    var spacer = document.createElement('div');
+    spacer.style.display = 'inline';
+    spacer.style.padding = '8px';
+
+    this.addToolbarButton(editor, toolbar, 'delete', 'Delete', '/assets/image/delete2.png');
+				
+    toolbar.appendChild(spacer.cloneNode(true));
+    
+    this.addToolbarButton(editor, toolbar, 'cut', 'Cut', '/assets/image/cut.png');
+    this.addToolbarButton(editor, toolbar, 'copy', 'Copy', '/assets/image/copy.png');
+    this.addToolbarButton(editor, toolbar, 'paste', 'Paste', '/assets/image/paste.png');
+
+    toolbar.appendChild(spacer.cloneNode(true));
+
+    this.addToolbarButton(editor, toolbar, 'undo', '', '/assets/image/undo.png');
+    this.addToolbarButton(editor, toolbar, 'redo', '', '/assets/image/redo.png');
+
+    toolbar.appendChild(spacer.cloneNode(true));
+  }
 
   addSidebarIcon(graph, sidebar, html, image, typeShape?) {
 
@@ -192,7 +202,16 @@ export class AppComponent implements AfterViewInit {
     // Creates the image which is used as the drag icon (preview)
     var ds = mxUtils.makeDraggable(img, graph, funct, dragElt, 0, 0, true, true);
     ds.setGuidesEnabled(true);
-  };
+  }
+
+  showOutline(graph, outline) {
+    // Creates the outline (navigator, overview) for moving around the graph in the top, right corner of the window.
+    var outln = new mxOutline(graph, outline);
+
+    // Show the images in the outline
+    outln.outline.labelsVisible = true;
+    outln.outline.setHtmlLabels(true);
+  }
 
   configureStylesheet(graph)
   {
@@ -246,14 +265,5 @@ export class AppComponent implements AfterViewInit {
     style[mxConstants.STYLE_STROKEWIDTH] = '2';
     style[mxConstants.STYLE_ROUNDED] = true;
     style[mxConstants.STYLE_EDGE] = mxEdgeStyle.EntityRelation;
-  };
-
-  showOutline(graph, outline) {
-    // Creates the outline (navigator, overview) for moving around the graph in the top, right corner of the window.
-    var outln = new mxOutline(graph, outline);
-
-    // Show the images in the outline
-    outln.outline.labelsVisible = true;
-    outln.outline.setHtmlLabels(true);
   }
 }
