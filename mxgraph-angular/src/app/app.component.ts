@@ -47,6 +47,9 @@ export class AppComponent implements AfterViewInit {
     const sidebar_sequences = document.getElementById('sequences'); // sidebarContainer
     const sidebar_goals = document.getElementById('goals');         // sidebarContainer
     const outline = document.getElementById('outlineContainer');
+    // Defines an icon for creating new connections in the connection handler.
+		// This will automatically disable the highlighting of the source vertex.
+    mxConnectionHandler.prototype.connectImage = new mxImage('/assets/image/connector.gif', 16, 16);
     this.createCells(graph, sidebar_sequences, sidebar_goals);
     this.createToolbar(editor, toolbar, container);
     this.showOutline(graph, outline);
@@ -266,5 +269,9 @@ export class AppComponent implements AfterViewInit {
     style[mxConstants.STYLE_STROKEWIDTH] = '2';
     style[mxConstants.STYLE_ROUNDED] = true;
     style[mxConstants.STYLE_EDGE] = mxEdgeStyle.EntityRelation;
+  }
+
+  hoverIcons() {
+
   }
 }
